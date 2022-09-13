@@ -1,10 +1,18 @@
 package com.example.cyclemap_android_upload_client
 
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 
 import com.garmin.fit.*
+
+import org.osmdroid.config.Configuration.*
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Polyline
 
 import java.io.IOException
 import java.io.InputStream
@@ -12,9 +20,16 @@ import java.util.*
 
 import kotlin.math.pow
 
+var geoPoints = Vector<GeoPoint>()
+
 class MainActivity : AppCompatActivity() {
+    private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
+    private lateinit var map : MapView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
+
         setContentView(R.layout.activity_main)
 
         val filename = "Activity.fit"
@@ -56,6 +71,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.i("Fit","Decoded FIT file $filename.")
+
+        map = findViewById<MapView>(R.id.map)
+        map.setTileSource(TileSourceFactory.MAPNIK)
+        map.setMultiTouchControls(true)
+
+        val mapController = map.controller
+        val trip = Polyline(map)
+        if(!geoPoints.isEmpty()) {
+            for (point in geoPoints)
+                trip.addPoint(point)
+            map.overlays.add(trip)
+            mapController.setCenter(geoPoints.elementAt(geoPoints.size / 2))
+        }
+        mapController.setZoom(11.1)
+    }
+
+    //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Kotlin)
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val permissionsToRequest = ArrayList<String>()
+        var i = 0
+        while (i < grantResults.size) {
+            permissionsToRequest.add(permissions[i])
+            i++
+        }
+        if (permissionsToRequest.size > 0) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                REQUEST_PERMISSIONS_REQUEST_CODE)
+        }
     }
 }
 
@@ -66,6 +112,7 @@ private class Listener :   RecordMesgListener {
         val altitudeValue = getGeoPoint(mesg,RecordMesg.AltitudeFieldNum)
         if(latValue != 0.0 && longValue != 0.0) {
             Log.i("FitFile", "($altitudeValue, $latValue, $longValue)")
+            geoPoints.addElement(GeoPoint(latValue, longValue))
         }
     }
     private fun getGeoPoint(mess: RecordMesg, fieldID: Int): Double {
