@@ -8,6 +8,8 @@ import androidx.core.app.ActivityCompat
 
 import com.garmin.fit.*
 
+import com.google.gson.Gson
+
 import org.osmdroid.config.Configuration.*
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -85,6 +87,10 @@ class MainActivity : AppCompatActivity() {
             mapController.setCenter(geoPoints.elementAt(geoPoints.size / 2))
         }
         mapController.setZoom(11.1)
+
+        val gson = Gson()
+        val geoPointJson: String = gson.toJson(geoPoints)
+        Log.i("Json",geoPointJson)
     }
 
     //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Kotlin)
