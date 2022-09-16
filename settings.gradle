@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Cyclemap-Android-Upload-Client"
+rootProject.name = "CyclemapAndroidUploadClient"
 include ':app'

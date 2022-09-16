@@ -1,4 +1,4 @@
-package com.example.cyclemap_android_upload_client
+package com.johannsn.cyclemapandroiduploadclient
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.example.cyclemap_android_upload_client", appContext.packageName)
+        assertEquals("com.johannsn.cyclemapandroiduploadclient", appContext.packageName)
     }
 }

@@ -1,4 +1,4 @@
-package com.example.cyclemap_android_upload_client
+package com.johannsn.cyclemapandroiduploadclient
 
 import org.junit.Test
 
