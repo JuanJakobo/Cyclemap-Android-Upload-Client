@@ -3,35 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/TourFragment">
+    app:startDestination="@id/ToursFragment">
 
     <fragment
-        android:id="@+id/TourFragment"
-        android:name="com.johannsn.cyclemapandroiduploadclient.ui.main.TourFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_tour">
+        android:id="@+id/ToursFragment"
+        android:name="com.johannsn.cyclemapandroiduploadclient.ui.main.ToursFragment"
+        tools:layout="@layout/fragment_tours">
 
         <action
-            android:id="@+id/action_TourFragment_to_TripFragment"
+            android:id="@+id/action_ToursFragment_to_TripsFragment"
+            app:destination="@id/TripsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/TripsFragment"
+        android:name="com.johannsn.cyclemapandroiduploadclient.ui.main.TripsFragment"
+        tools:layout="@layout/fragment_trips">
+
+        <action
+            android:id="@+id/action_TripsFragment_to_TripFragment"
             app:destination="@id/TripFragment" />
     </fragment>
     <fragment
         android:id="@+id/TripFragment"
         android:name="com.johannsn.cyclemapandroiduploadclient.ui.main.TripFragment"
-        android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_trip">
 
         <action
-            android:id="@+id/action_TripFragment_to_CoordinatesFragment"
-            app:destination="@id/CoordinatesFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/CoordinatesFragment"
-        android:name="com.johannsn.cyclemapandroiduploadclient.ui.main.CoordinatesFragment"
-        tools:layout="@layout/fragment_coordinates">
-
-        <action
-            android:id="@+id/action_CoordinatesFragment_to_TourFragment"
-            app:destination="@id/TourFragment" />
+            android:id="@+id/action_TripFragment_to_TripsFragment"
+            app:destination="@id/TripsFragment" />
     </fragment>
 </navigation>
