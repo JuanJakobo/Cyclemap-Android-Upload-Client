@@ -1,6 +1,7 @@
 package com.johannsn.cyclemapandroiduploadclient.service
 
 import android.util.Log
+import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import retrofit2.Call
@@ -49,7 +50,7 @@ class ApiService {
                     val res = response.body()!!
                     val arr = mutableListOf<Trip>()
                     for(item in res)
-                        arr.add(Trip(item.id, item.text,item.tour))
+                        arr.add(Trip(item.id, item.title,item.text, item.tour))
 
                     onResult(arr)
                 }
@@ -63,6 +64,32 @@ class ApiService {
                 onResult(null)
             }
         })
+    }
+
+    fun addTrip(tourId: Long, trip: Trip, onResult: (Trip?) -> Unit){
+        val retrofit = ServiceBuilder.buildService(ApiInterface::class.java)
+        retrofit.addTrip(tourId, trip).enqueue(
+            object : Callback<Trip> {
+                override fun onResponse(
+                    call: Call<Trip>,
+                    response: Response<Trip>
+                ) {
+                    if(response.code() == 201) {
+                        Log.i("json","success")
+                        val addedTrip = response.body()
+                        onResult(addedTrip)
+                        //TODO get the created one
+                    }
+                    else{
+                        Log.i("json",response.code().toString())
+                        onResult(null)
+                    }
+                }
+                override fun onFailure(call: Call<Trip>, t: Throwable) {
+                    t.message?.let { Log.e("json", it) }
+                    onResult(null)
+                }
+            })
     }
 
     fun addTour(tour: Tour, onResult: (Tour?) -> Unit){
@@ -85,6 +112,35 @@ class ApiService {
                     }
                 }
                 override fun onFailure(call: Call<Tour>, t: Throwable) {
+                    t.message?.let { Log.e("json", it) }
+                    onResult(null)
+                }
+            })
+    }
+
+    fun addCoordinates(tripId: Long, coordinates: List<Coordinates>, onResult: (Coordinates?) -> Unit){
+        val retrofit = ServiceBuilder.buildService(ApiInterface::class.java)
+        retrofit.addCoordinates(tripId, coordinates).enqueue(
+            object : Callback<Coordinates> {
+                override fun onResponse(
+                    call: Call<Coordinates>,
+                    response: Response<Coordinates>
+                ) {
+                    Log.i("json","test")
+                    if(response.code() == 201) {
+                        Log.i("json","juhu success")
+                        val addedCoordinates = response.body()
+                        //onResult(addedCoordinates)
+                        onResult(null)
+                        //TODO get the created one
+                    }
+                    else{
+                        Log.i("json",response.code().toString())
+                        Log.i("json", response.body().toString())
+                        onResult(null)
+                    }
+                }
+                override fun onFailure(call: Call<Coordinates>, t: Throwable) {
                     t.message?.let { Log.e("json", it) }
                     onResult(null)
                 }
