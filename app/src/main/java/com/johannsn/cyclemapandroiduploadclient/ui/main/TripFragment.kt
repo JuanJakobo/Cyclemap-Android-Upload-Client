@@ -1,17 +1,17 @@
 package com.johannsn.cyclemapandroiduploadclient.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.snackbar.Snackbar
+import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.FragmentTripBinding
 import com.johannsn.cyclemapandroiduploadclient.service.ApiService
-import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Polyline
 
 class TripFragment : Fragment() {
@@ -37,14 +37,17 @@ class TripFragment : Fragment() {
         map.setMultiTouchControls(true)
         val mapController = map.controller
         mapController.setZoom(11.1)
-        if ((activity as MainActivity?)!!.geoPoints.isNotEmpty()) {
+        if ((activity as MainActivity).currentCoordinates.isNotEmpty()) {
             //if is here and has already geoPoints, check
 
             val trip = Polyline(map)
-            for (point in (activity as MainActivity?)!!.geoPoints)
-                trip.addPoint(point)
+            for (coordinate in (activity as MainActivity).currentCoordinates)
+                if(coordinate.lat != null && coordinate.lng != null)
+                    trip.addPoint(GeoPoint(coordinate.lat,coordinate.lng))
+
             map.overlays.add(trip)
-            mapController.setCenter((activity as MainActivity?)!!.geoPoints.elementAt((activity as MainActivity?)!!.geoPoints.size / 2))
+            //TODO center map
+            //mapController.activity as MainActivity?)!!.geoPoints.elementAt((activity as MainActivity?)!!.geoPoints.size / 2))
         }else{
             //TODO map overlay
             //map.overlays.
@@ -52,43 +55,37 @@ class TripFragment : Fragment() {
 
 
         binding.buttonEdit.setOnClickListener {
-            if ((activity as MainActivity?)!!.currentTrip != null) {
+            if ((activity as MainActivity).currentTrip != null) {
                 //put
-                binding.buttonEdit.text = "update"
+                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.update_trip)
+                binding.buttonEdit.text = R.string.update.toString()
             } else {
                 //post
-                binding.buttonEdit.text = "save"
-                if ((activity as MainActivity?)!!.currentTour != null) {
-                    val coordinates = mutableListOf<Coordinates>()
-                    for (geopoint in (activity as MainActivity?)!!.geoPoints)
-                        coordinates.add(
-                            Coordinates(
-                                geopoint.longitude,
-                                geopoint.latitude,
-                                geopoint.altitude
-                            )
-                        )
+                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.create_trip)
+                binding.buttonEdit.text = R.string.save.toString()
+                if ((activity as MainActivity).currentTour != null) {
 
                     val apiService = ApiService()
                     val newTrip = Trip(
                         title = binding.textViewTitle.text.toString(),
                         text = binding.textViewText.text.toString(),
-                        coordinates = coordinates
+                        coordinates = (activity as MainActivity).currentCoordinates
                     )
                     //TODO change
                     val tourId = (activity as MainActivity?)!!.currentTour?.id!!
                     apiService.addTrip(tourId,newTrip) { trip ->
-                        var barText = "Failed to create Trip."
+                        var barText = R.string.failed_to_create_trip.toString()
                         if (trip != null) {
-                            Log.i("upload", trip.id.toString())
-                            barText = "Added Trip ${trip.title} with Id ${trip.id}"
+                            barText = R.string.create_trip.toString() + "${trip.title}(${trip.id})."
                         }
                         Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
-                            .setAction("action", null).show()
+                            .show()
                     }
-                    //findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
                 }
             }
+            //Do in both cases
+            (activity as MainActivity).currentCoordinates.clear()
+            //findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
         }
 
     }

@@ -18,7 +18,6 @@ import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
  */
-//TODO put together with tour
 class TripsFragment : Fragment() {
 
     private var _binding: FragmentTripsBinding? = null
@@ -40,53 +39,59 @@ class TripsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as MainActivity?)!!.currentTrip = null
+        (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.select_trip)
+
+        (activity as MainActivity).currentTrip = null
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
             loadTrips()
             swipeRefreshLayout.isRefreshing = false
         }
+        //TODO do not always reload
         loadTrips()
     }
 
-    //use template?
+    //TODO use template?
     private fun loadTrips() {
-        val listView: ListView = binding.listView // view.findViewById(R.id.listView)
+        val listView: ListView = binding.listView
         val adapter = ArrayAdapter(requireActivity(), R.layout.listview_item, tripsList)
-        //TODO
         val tour = (activity as MainActivity?)!!.currentTour
         if(tour != null){
             val apiService = ApiService()
-            apiService.getTripsForTour(tour.id!!){
-                if (it != null) {
+            apiService.getTripsForTour(tour.id!!){ trips ->
+                if (trips != null) {
                     binding.fab.visibility = View.VISIBLE
                     binding.listView.visibility = View.VISIBLE
                     binding.textViewError.visibility = View.GONE
                     binding.fab.setOnClickListener {
-                        //val bundle = Bundle()
-                        //bundle.putLong("TourId", tourId)
-                        //findNavController().navigate(R.id.action_TripsFragment_to_TripFragment,bundle)
                         findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                     }
-                    if(it.size > 0) {
+                    if(trips.size > 0) {
                         tripsList.clear()
-                        tripsList.addAll(it)
+                        tripsList.addAll(trips)
                         listView.adapter = adapter
                         //TODO move to tours, beginning and end
                         listView.onItemClickListener =
-                            AdapterView.OnItemClickListener { _, _, position, _ -> // value of item that is clicked
+                            AdapterView.OnItemClickListener { _, _, position, _ ->
                                 binding.myProgress.visibility = View.VISIBLE
                                 binding.textViewLoading.visibility = View.VISIBLE
                                 binding.myProgress.progress = 40
 
                                 val clickedTrip = listView.getItemAtPosition(position) as Trip
-                                (activity as MainActivity?)!!.currentTrip = clickedTrip
+                                (activity as MainActivity).currentTrip = clickedTrip
+                                if((activity as MainActivity).currentCoordinates.isEmpty())
+                                    (activity as MainActivity).currentCoordinates = clickedTrip.coordinates!!
+                                else{
+                                    //Trip Coordinates have been shared by other app and received
+                                    //TODO show dialog
+
+                                }
                                 findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                             }
                     } else {
                         binding.textViewError.visibility = View.VISIBLE
-                        binding.textViewError.text = "There are no trips for this tour."
+                        binding.textViewError.setText(R.string.no_trips_for_tour)
                     }
                 }
                 else
@@ -96,9 +101,8 @@ class TripsFragment : Fragment() {
                     binding.listView.visibility = View.GONE
                     tripsList.clear()
                     adapter.notifyDataSetChanged()
-                    val barText = "Failed to load."
-                    Snackbar.make(requireView(),barText, Snackbar.LENGTH_LONG)
-                        .setAction("action",null).show()
+                    Snackbar.make(requireView(),R.string.failed_to_load, Snackbar.LENGTH_LONG)
+                        .show()
                     //TODO catch error
                 }
 

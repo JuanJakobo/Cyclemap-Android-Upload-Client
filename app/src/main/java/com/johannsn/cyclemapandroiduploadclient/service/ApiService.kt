@@ -78,7 +78,6 @@ class ApiService {
                         Log.i("json","success")
                         val addedTrip = response.body()
                         onResult(addedTrip)
-                        //TODO get the created one
                     }
                     else{
                         Log.i("json",response.code().toString())
@@ -104,7 +103,6 @@ class ApiService {
                         Log.i("json","success")
                         val addedTour = response.body()
                         onResult(addedTour)
-                        //TODO get the created one
                     }
                     else{
                         Log.i("json",response.code().toString())
@@ -130,9 +128,7 @@ class ApiService {
                     if(response.code() == 201) {
                         Log.i("json","juhu success")
                         val addedCoordinates = response.body()
-                        //onResult(addedCoordinates)
-                        onResult(null)
-                        //TODO get the created one
+                        onResult(addedCoordinates)
                     }
                     else{
                         Log.i("json",response.code().toString())

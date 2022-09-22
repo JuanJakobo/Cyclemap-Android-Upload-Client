@@ -1,7 +1,6 @@
 package com.johannsn.cyclemapandroiduploadclient.ui.main
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,11 +38,13 @@ class ToursFragment : Fragment() {
 
     }
 
-    //TODO move where?
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as MainActivity?)!!.currentTour = null
+        //TODO move strings to string file
+        (activity as MainActivity).supportActionBar?.setSubtitle(R.string.select_tour)
+
+        (activity as MainActivity).currentTour = null
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
@@ -51,85 +52,72 @@ class ToursFragment : Fragment() {
             swipeRefreshLayout.isRefreshing = false
         }
         //TODO add loading screen
+        //TODO if tours are loaded, do not reload, therefore should not delete them in trips
+        //ah tours not saved anywhere, save?
         loadTours()
 
     }
 
-    fun loadTours(){
+    private fun loadTours(){
         val listView: ListView = binding.listView
         val adapter  = ArrayAdapter(requireActivity(),R.layout.listview_item,toursList)
         val apiService = ApiService()
         apiService.getTours { tours ->
             if (tours != null) {
-                //TODO test if id > 0
-                //return also tours?
-                toursList.clear()
-                toursList.addAll(tours)
-                adapter.notifyDataSetChanged()
-                listView.adapter = adapter
                 binding.fab.visibility = View.VISIBLE
                 binding.listView.visibility = View.VISIBLE
                 binding.textViewError.visibility = View.GONE
-                listView.onItemClickListener =
-                    AdapterView.OnItemClickListener { _, _, position, _ ->
-                        val clickedTour = listView.getItemAtPosition(position) as Tour
-                        (activity as MainActivity?)!!.currentTour = clickedTour
-                        findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
-                        //val bundle = Bundle()
-                        //if(clickedTour.id != null)
-                            //bundle.putLong("TourId", clickedTour.id)
-                        //findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment,bundle)
-                    }
                 binding.fab.setOnClickListener { view ->
                     val editDialogBuilder = AlertDialog.Builder(activity)
-                    editDialogBuilder.setTitle("Add new Tour")
+                    editDialogBuilder.setTitle(R.string.add_new_tour)
                     val editTour = EditText(activity)
                     editDialogBuilder.setView(editTour)
-                    editDialogBuilder.setPositiveButton("Add Tour",
-                        DialogInterface.OnClickListener { _, _ ->
-                            val tour = Tour( title = editTour.text.toString())
-                            apiService.addTour(tour) { tour ->
-                                var barText = "Failed to create Tour."
-                                if (tour != null) {
-                                    toursList.add(tour)
-                                    adapter.notifyDataSetChanged()
-                                    barText = "Added Tour ${tour.title} with Id ${tour.id}"
-                                }
-                                Snackbar.make(view,barText, Snackbar.LENGTH_LONG)
-                                    .setAction("action",null).show()
+                    editDialogBuilder.setPositiveButton(R.string.add_tour
+                    ) { _, _ ->
+                        val newTour = Tour(title = editTour.text.toString())
+                        apiService.addTour(newTour) { tour ->
+                            var barText = R.string.failed_to_create_tour.toString()
+                            if (tour != null) {
+                                toursList.add(tour)
+                                adapter.notifyDataSetChanged()
+                                barText = R.string.added_tour.toString() + " ${tour.title}(${tour.id})"
                             }
-                        })
+                            Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                    }
 
-                    editDialogBuilder.setNegativeButton("Cancel",
-                        DialogInterface.OnClickListener { _, _ ->
-                        })
-
+                    editDialogBuilder.setNegativeButton(R.string.cancel ) { _, _ ->
+                    }
                     val dialog = editDialogBuilder.create()
                     dialog.show()
+                    if(tours.size > 0) {
+                        //TODO return also trips?
+                        toursList.clear()
+                        toursList.addAll(tours)
+                        adapter.notifyDataSetChanged()
+                        listView.adapter = adapter
+                        listView.onItemClickListener =
+                            AdapterView.OnItemClickListener { _, _, position, _ ->
+                                val clickedTour = listView.getItemAtPosition(position) as Tour
+                                (activity as MainActivity?)!!.currentTour = clickedTour
+                                findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
+                            }
+                    }
 
                 }
-            }
-            else {
+            } else {
                 binding.textViewError.visibility = View.VISIBLE
                 binding.fab.visibility = View.GONE
                 binding.listView.visibility = View.GONE
                 toursList.clear()
                 adapter.notifyDataSetChanged()
-                val barText = "Failed to load."
-                Snackbar.make(requireView(),barText, Snackbar.LENGTH_LONG)
-                    .setAction("action",null).show()
-                //TODO catch error
+                Snackbar.make(requireView(),R.string.failed_to_load, Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
 
     }
-    /*
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        // TODO: Use the ViewModel
-    }
-     */
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:visibility="gone"
-        android:text="@string/failed_to_load"
+        android:text="@string/failed_to_load_tours"
         app:layout_anchor="@+id/refreshLayout"
         app:layout_anchorGravity="center" />
 

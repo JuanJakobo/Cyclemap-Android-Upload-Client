@@ -16,10 +16,10 @@ import androidx.navigation.ui.navigateUp
 import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.ActivityMainBinding
 import com.johannsn.cyclemapandroiduploadclient.service.fitToGeo
+import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import org.osmdroid.config.Configuration
-import org.osmdroid.util.GeoPoint
 import java.io.IOException
 import java.util.*
 
@@ -31,19 +31,14 @@ class MainActivity : AppCompatActivity() {
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
 
-    internal var geoPoints = Vector<GeoPoint>()
+    internal var currentCoordinates = mutableListOf<Coordinates>()
+
     internal var currentTour : Tour? = null
     internal var currentTrip : Trip? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //TODO move?
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
-
-        //TODO
-        //https://stackoverflow.com/questions/16499385/using-bundle-to-pass-data-between-fragment-to-another-fragment-example
-        //https://github.com/nextcloud/android
-        //TODO kotlin non null assesment vs assement
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -64,7 +59,7 @@ class MainActivity : AppCompatActivity() {
                         val contentResolver = contentResolver
                         val inputStream = contentResolver?.openInputStream(uri)
                         if(inputStream != null) {
-                            geoPoints = test.readInFit(inputStream)
+                            currentCoordinates = test.readInFit(inputStream)
                         }
                     } catch (e: IOException) {
                         throw RuntimeException("Error opening file")
@@ -99,7 +94,6 @@ class MainActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
-    //TODO move?
     //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Kotlin)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
