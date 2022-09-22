@@ -1,20 +1,20 @@
 package com.johannsn.cyclemapandroiduploadclient.ui.main
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ListView
+import android.widget.*
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.FragmentToursBinding
 import com.johannsn.cyclemapandroiduploadclient.service.ApiService
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -43,16 +43,17 @@ class ToursFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        (activity as MainActivity?)!!.currentTour = null
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
             loadTours()
             swipeRefreshLayout.isRefreshing = false
         }
+        //TODO add loading screen
         loadTours()
 
     }
-
 
     fun loadTours(){
         val listView: ListView = binding.listView
@@ -61,6 +62,7 @@ class ToursFragment : Fragment() {
         apiService.getTours { tours ->
             if (tours != null) {
                 //TODO test if id > 0
+                //return also tours?
                 toursList.clear()
                 toursList.addAll(tours)
                 adapter.notifyDataSetChanged()
@@ -71,24 +73,40 @@ class ToursFragment : Fragment() {
                 listView.onItemClickListener =
                     AdapterView.OnItemClickListener { _, _, position, _ ->
                         val clickedTour = listView.getItemAtPosition(position) as Tour
-                        val bundle = Bundle()
-                        if(clickedTour.id != null)
-                            bundle.putLong("TourId", clickedTour.id)
-                        findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment,bundle)
+                        (activity as MainActivity?)!!.currentTour = clickedTour
+                        findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
+                        //val bundle = Bundle()
+                        //if(clickedTour.id != null)
+                            //bundle.putLong("TourId", clickedTour.id)
+                        //findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment,bundle)
                     }
                 binding.fab.setOnClickListener { view ->
-                    val tour = Tour( title = "Test")
-                    apiService.addTour(tour) { tour ->
-                        var barText = "Failed to create user."
-                        if (tour != null) {
-                            Log.i("json", tour.id.toString())
-                            toursList.add(tour)
-                            adapter.notifyDataSetChanged()
-                            barText = "Added Tour ${tour.id}"
-                        }
-                        Snackbar.make(view,barText, Snackbar.LENGTH_LONG)
-                            .setAction("action",null).show()
-                    }
+                    val editDialogBuilder = AlertDialog.Builder(activity)
+                    editDialogBuilder.setTitle("Add new Tour")
+                    val editTour = EditText(activity)
+                    editDialogBuilder.setView(editTour)
+                    editDialogBuilder.setPositiveButton("Add Tour",
+                        DialogInterface.OnClickListener { _, _ ->
+                            val tour = Tour( title = editTour.text.toString())
+                            apiService.addTour(tour) { tour ->
+                                var barText = "Failed to create Tour."
+                                if (tour != null) {
+                                    toursList.add(tour)
+                                    adapter.notifyDataSetChanged()
+                                    barText = "Added Tour ${tour.title} with Id ${tour.id}"
+                                }
+                                Snackbar.make(view,barText, Snackbar.LENGTH_LONG)
+                                    .setAction("action",null).show()
+                            }
+                        })
+
+                    editDialogBuilder.setNegativeButton("Cancel",
+                        DialogInterface.OnClickListener { _, _ ->
+                        })
+
+                    val dialog = editDialogBuilder.create()
+                    dialog.show()
+
                 }
             }
             else {
