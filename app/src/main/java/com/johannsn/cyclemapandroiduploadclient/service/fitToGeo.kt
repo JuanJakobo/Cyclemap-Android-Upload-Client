@@ -2,19 +2,21 @@ package com.johannsn.cyclemapandroiduploadclient.service
 
 import android.util.Log
 import com.garmin.fit.*
+import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import org.osmdroid.util.GeoPoint
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
+import kotlin.math.log
 import kotlin.math.pow
 
-var geoPoints = Vector<GeoPoint>()
+val coordinates = mutableListOf<Coordinates>()
 var counter = 0
 var departer = 3
 
 class fitToGeo {
 
-    fun readInFit(open: InputStream): Vector<GeoPoint> {
+    fun readInFit(open: InputStream): MutableList<Coordinates> {
 
         val decode = Decode()
         val messBroadcaster = MesgBroadcaster(decode)
@@ -57,20 +59,23 @@ class fitToGeo {
 
         //Log.i("Fit", "Decoded FIT file $filename.")
         Log.i("Fit", "Decoded FIT file.")
-        return geoPoints
+        return coordinates
     }
 
     //private vs internal?
     private class Listener : RecordMesgListener {
         override fun onMesg(mesg: RecordMesg) {
+            //TODO read distance, meters
+            Log.i("fitTo",RecordMesg.DistanceFieldNum.toString())
+            Log.i("fitTo",RecordMesg.AltitudeFieldNum.toString())
             if(counter % departer == 0) {
-            val latValue = getGeoPoint(mesg, RecordMesg.PositionLatFieldNum)
-            val longValue = getGeoPoint(mesg, RecordMesg.PositionLongFieldNum)
-            val altitudeValue = getGeoPoint(mesg, RecordMesg.AltitudeFieldNum)
-            if (latValue != 0.0 && longValue != 0.0) {
-                Log.i("FitFile", "($altitudeValue, $latValue, $longValue)")
-                geoPoints.addElement(GeoPoint(latValue, longValue))
-            }
+                val latValue = getGeoPoint(mesg, RecordMesg.PositionLatFieldNum)
+                val lngValue = getGeoPoint(mesg, RecordMesg.PositionLongFieldNum)
+                val altitudeValue = getGeoPoint(mesg, RecordMesg.AltitudeFieldNum)
+                if (latValue != 0.0 && lngValue != 0.0) {
+                    //TODO add altitude
+                    coordinates.add(Coordinates(lngValue,latValue))
+                }
             }
             counter++
         }
