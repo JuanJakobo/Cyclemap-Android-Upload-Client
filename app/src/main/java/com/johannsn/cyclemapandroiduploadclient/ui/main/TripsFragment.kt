@@ -35,12 +35,12 @@ class TripsFragment : Fragment() {
 
         _binding = FragmentTripsBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        (activity as MainActivity?)!!.currentTrip = null
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
@@ -50,40 +50,39 @@ class TripsFragment : Fragment() {
         loadTrips()
     }
 
-    fun loadTrips() {
+    //use template?
+    private fun loadTrips() {
         val listView: ListView = binding.listView // view.findViewById(R.id.listView)
         val adapter = ArrayAdapter(requireActivity(), R.layout.listview_item, tripsList)
         //TODO
-        val tourId = arguments?.getLong("TourId")
-        if(tourId != null){
+        val tour = (activity as MainActivity?)!!.currentTour
+        if(tour != null){
             val apiService = ApiService()
-            apiService.getTripsForTour(tourId){
+            apiService.getTripsForTour(tour.id!!){
                 if (it != null) {
                     binding.fab.visibility = View.VISIBLE
                     binding.listView.visibility = View.VISIBLE
                     binding.textViewError.visibility = View.GONE
-                    binding.fab.setOnClickListener { _ ->
-                        val bundle = Bundle()
-                        bundle.putLong("TourId", tourId)
-                        findNavController().navigate(R.id.action_TripsFragment_to_TripFragment,bundle)
+                    binding.fab.setOnClickListener {
+                        //val bundle = Bundle()
+                        //bundle.putLong("TourId", tourId)
+                        //findNavController().navigate(R.id.action_TripsFragment_to_TripFragment,bundle)
+                        findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                     }
                     if(it.size > 0) {
                         tripsList.clear()
                         tripsList.addAll(it)
                         listView.adapter = adapter
+                        //TODO move to tours, beginning and end
                         listView.onItemClickListener =
-                            AdapterView.OnItemClickListener { _, _, position, id -> // value of item that is clicked
+                            AdapterView.OnItemClickListener { _, _, position, _ -> // value of item that is clicked
                                 binding.myProgress.visibility = View.VISIBLE
                                 binding.textViewLoading.visibility = View.VISIBLE
                                 binding.myProgress.progress = 40
 
                                 val clickedTrip = listView.getItemAtPosition(position) as Trip
-                                //TODO here also Tour ID and put together
-                                val bundle = Bundle()
-                                if(clickedTrip.id != null)
-                                    bundle.putLong("TripId", clickedTrip.id)
-
-                                findNavController().navigate(R.id.action_TripsFragment_to_TripFragment,bundle)
+                                (activity as MainActivity?)!!.currentTrip = clickedTrip
+                                findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                             }
                     } else {
                         binding.textViewError.visibility = View.VISIBLE
