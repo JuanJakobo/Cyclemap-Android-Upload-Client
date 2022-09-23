@@ -33,5 +33,8 @@
     <string name="update">Update</string>
     <string name="failed_to_create_trip">Failed to create Trip.</string>
     <string name="added_trip">Added Trip</string>
+    <string name="hint_trip_title">Title Trip</string>
+    <string name="hint_trip_text">Description of the Trip</string>
+    <string name="choose_file">Choose file</string>
 
 </resources>

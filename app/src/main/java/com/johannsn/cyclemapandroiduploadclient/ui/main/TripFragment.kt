@@ -53,18 +53,20 @@ class TripFragment : Fragment() {
             //map.overlays.
         }
 
-
-        binding.buttonEdit.setOnClickListener {
-            if ((activity as MainActivity).currentTrip != null) {
-                //put
-                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.update_trip)
-                binding.buttonEdit.text = R.string.update.toString()
-            } else {
-                //post
-                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.create_trip)
-                binding.buttonEdit.text = R.string.save.toString()
+        if ((activity as MainActivity).currentTrip != null) {
+            //put
+            (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.update_trip)
+            binding.buttonEdit.setText(R.string.update)
+            binding.textViewTitle.setText((activity as MainActivity).currentTrip?.title)
+            binding.textViewText.setText((activity as MainActivity).currentTrip?.text)
+            binding.buttonEdit.setOnClickListener {
+            }
+        } else {
+            //post
+            (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.create_trip)
+            binding.buttonEdit.setText(R.string.save)
+            binding.buttonEdit.setOnClickListener {
                 if ((activity as MainActivity).currentTour != null) {
-
                     val apiService = ApiService()
                     val newTrip = Trip(
                         title = binding.textViewTitle.text.toString(),
@@ -72,23 +74,26 @@ class TripFragment : Fragment() {
                         coordinates = (activity as MainActivity).currentCoordinates
                     )
                     //TODO change
-                    val tourId = (activity as MainActivity?)!!.currentTour?.id!!
-                    apiService.addTrip(tourId,newTrip) { trip ->
-                        var barText = R.string.failed_to_create_trip.toString()
-                        if (trip != null) {
-                            barText = R.string.create_trip.toString() + "${trip.title}(${trip.id})."
+                    val tourId = (activity as MainActivity).currentTour?.id
+                    if (tourId != null) {
+                        apiService.addTrip(tourId, newTrip) { trip ->
+                            var barText = R.string.failed_to_create_trip.toString()
+                            if (trip != null) {
+                                barText =
+                                    R.string.create_trip.toString() + "${trip.title}(${trip.id})."
+                            }
+                            Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
+                                .show()
                         }
-                        Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
-                            .show()
                     }
                 }
             }
-            //Do in both cases
+            //TODO Do in both cases
             (activity as MainActivity).currentCoordinates.clear()
             //findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
         }
-
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

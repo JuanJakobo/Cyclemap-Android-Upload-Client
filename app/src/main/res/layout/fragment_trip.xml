@@ -14,11 +14,20 @@
 
         <org.osmdroid.views.MapView
             android:id="@+id/map"
+            android:visibility="gone"
             tilesource="Mapnik"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.4">
         </org.osmdroid.views.MapView>
+
+        <Button
+            android:id="@+id/chooseFile"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:text="@string/choose_file"
+            android:layout_height="0dp"
+            android:layout_weight="0.4"/>
 
         <EditText
             android:id="@+id/textViewTitle"
@@ -26,7 +35,8 @@
             android:layout_height="0dp"
             android:layout_weight="0.1"
             android:inputType="text"
-            android:text="Title" />
+            android:hint="@string/hint_trip_title"
+            android:autofillHints="name" />
 
         <EditText
             android:id="@+id/textViewText"
@@ -34,7 +44,8 @@
             android:layout_height="0dp"
             android:layout_weight="0.4"
             android:inputType="text"
-            android:text="TextView" />
+            android:hint="@string/hint_trip_text"
+            android:autofillHints="name" />
 
         <Button
             android:id="@+id/buttonEdit"
