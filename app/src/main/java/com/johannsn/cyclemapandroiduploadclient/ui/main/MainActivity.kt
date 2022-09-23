@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
 
     internal var currentCoordinates = mutableListOf<Coordinates>()
+    internal var gotSharedCoordinates = false
 
     internal var currentTour : Tour? = null
     internal var currentTrip : Trip? = null
@@ -45,13 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         if(intent  != null) {
             if (intent.type.equals("message/rfc822")) {
-                val stream : MutableList<Parcelable>? = when (intent.action) {
-                    Intent.ACTION_SEND_MULTIPLE ->
-                        intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM)!!
-                    Intent.ACTION_SEND ->
-                        mutableListOf(intent.getParcelableExtra(Intent.EXTRA_STREAM)!!)
-                    else -> null
-                }
+                val stream = if(intent.action === Intent.ACTION_SEND_MULTIPLE) intent.getParcelableArrayListExtra<Parcelable>(Intent.EXTRA_STREAM) else null
                 if (stream != null) {
                     val uri = Uri.parse(stream[stream.size-1].toString())
                     try {
@@ -60,6 +55,7 @@ class MainActivity : AppCompatActivity() {
                         val inputStream = contentResolver?.openInputStream(uri)
                         if(inputStream != null) {
                             currentCoordinates = test.readInFit(inputStream)
+                            gotSharedCoordinates = true
                         }
                     } catch (e: IOException) {
                         throw RuntimeException("Error opening file")
@@ -82,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        //TODO handle options menu
+        Log.i("tester","options called")
         return when (item.itemId) {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)

@@ -32,23 +32,20 @@ class TripFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val map = binding.map
-        map.setTileSource(TileSourceFactory.MAPNIK)
-        map.setMultiTouchControls(true)
-        val mapController = map.controller
-        mapController.setZoom(11.1)
         if ((activity as MainActivity).currentCoordinates.isNotEmpty()) {
-            //if is here and has already geoPoints, check
-
-            val trip = Polyline(map)
+            val map = binding.map
+            map.visibility = View.VISIBLE
+            binding.chooseFile.visibility = View.GONE
+            map.setTileSource(TileSourceFactory.MAPNIK)
+            map.setMultiTouchControls(true)
+            val line = Polyline(map)
             for (coordinate in (activity as MainActivity).currentCoordinates)
-                if(coordinate.lat != null && coordinate.lng != null)
-                    trip.addPoint(GeoPoint(coordinate.lat,coordinate.lng))
-
-            map.overlays.add(trip)
-            //TODO center map
-            //mapController.activity as MainActivity?)!!.geoPoints.elementAt((activity as MainActivity?)!!.geoPoints.size / 2))
-        }else{
+                line.addPoint(GeoPoint(coordinate.lat, coordinate.lng))
+            map.overlays.add(line)
+            map.post { map.zoomToBoundingBox(line.bounds.increaseByScale(1.7f), false) }
+        } else {
+            binding.map.visibility = View.GONE
+            binding.chooseFile.visibility = View.VISIBLE
             //TODO map overlay
             //map.overlays.
         }
@@ -71,7 +68,7 @@ class TripFragment : Fragment() {
                     val newTrip = Trip(
                         title = binding.textViewTitle.text.toString(),
                         text = binding.textViewText.text.toString(),
-                        coordinates = (activity as MainActivity).currentCoordinates
+                        coordinates = (activity as MainActivity).currentCoordinates,
                     )
                     //TODO change
                     val tourId = (activity as MainActivity).currentTour?.id
