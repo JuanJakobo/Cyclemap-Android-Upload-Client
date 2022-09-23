@@ -3,26 +3,23 @@ package com.johannsn.cyclemapandroiduploadclient.service
 import android.util.Log
 import com.garmin.fit.*
 import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
-import org.osmdroid.util.GeoPoint
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
-import kotlin.math.log
 import kotlin.math.pow
 
 val coordinates = mutableListOf<Coordinates>()
 var counter = 0
 var departer = 3
 
-class fitToGeo {
+class FitToGeo {
 
     fun readInFit(open: InputStream): MutableList<Coordinates> {
 
         val decode = Decode()
         val messBroadcaster = MesgBroadcaster(decode)
         val listener = Listener()
-        val inputStream = open
         /*
+        TODO
         try {
             inputStream = open
         } catch (e: IOException) {
@@ -34,15 +31,15 @@ class fitToGeo {
         messBroadcaster.addListener(listener as RecordMesgListener)
 
         try {
-            decode.read(inputStream, messBroadcaster, messBroadcaster)
+            decode.read(open, messBroadcaster, messBroadcaster)
         } catch (e: FitRuntimeException) {
             if (decode.invalidFileDataSize) {
                 decode.nextFile()
-                decode.read(inputStream, messBroadcaster, messBroadcaster)
+                decode.read(open, messBroadcaster, messBroadcaster)
             } else {
                 Log.e("FitFile", "Exception decoding file: ")
                 try {
-                    inputStream.close()
+                    open.close()
                 } catch (f: IOException) {
                     throw RuntimeException(f)
                 }
@@ -52,12 +49,11 @@ class fitToGeo {
         }
 
         try {
-            inputStream.close()
+            open.close()
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
 
-        //Log.i("Fit", "Decoded FIT file $filename.")
         Log.i("Fit", "Decoded FIT file.")
         return coordinates
     }

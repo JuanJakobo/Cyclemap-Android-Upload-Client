@@ -15,7 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.ActivityMainBinding
-import com.johannsn.cyclemapandroiduploadclient.service.fitToGeo
+import com.johannsn.cyclemapandroiduploadclient.service.FitToGeo
 import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 if (stream != null) {
                     val uri = Uri.parse(stream[stream.size-1].toString())
                     try {
-                        val test = fitToGeo()
+                        val test = FitToGeo()
                         val contentResolver = contentResolver
                         val inputStream = contentResolver?.openInputStream(uri)
                         if(inputStream != null) {
