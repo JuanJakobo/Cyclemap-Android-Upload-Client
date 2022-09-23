@@ -19,10 +19,12 @@ class ApiService {
                 response: Response<MutableList<Tour>>
             ) {
                 if(response.code() == 200) {
-                    val res = response.body()!!
+                    val res = response.body()
                     val arr = mutableListOf<Tour>()
-                    for(item in res)
-                        arr.add(Tour(item.id, item.title))
+                    if (res != null) {
+                        for(item in res)
+                            arr.add(Tour(item.id, item.title))
+                    }
 
                     onResult(arr)
                 }
@@ -47,10 +49,16 @@ class ApiService {
                 response: Response<MutableList<Trip>>
             ) {
                 if(response.code() == 200) {
-                    val res = response.body()!!
+                    val res = response.body()
                     val arr = mutableListOf<Trip>()
-                    for(item in res)
-                        arr.add(Trip(item.id, item.title,item.text, item.tour))
+                    if (res != null) {
+                        for(item in res)
+                            arr.add(Trip(id = item.id,
+                                title = item.title,
+                                text = item.text,
+                                tour = item.tour,
+                                coordinates = item.coordinates))
+                    }
 
                     onResult(arr)
                 }
@@ -75,12 +83,10 @@ class ApiService {
                     response: Response<Trip>
                 ) {
                     if(response.code() == 201) {
-                        Log.i("json","success")
                         val addedTrip = response.body()
                         onResult(addedTrip)
                     }
                     else{
-                        Log.i("json",response.code().toString())
                         onResult(null)
                     }
                 }
@@ -100,12 +106,10 @@ class ApiService {
                     response: Response<Tour>
                 ) {
                     if(response.code() == 201) {
-                        Log.i("json","success")
                         val addedTour = response.body()
                         onResult(addedTour)
                     }
                     else{
-                        Log.i("json",response.code().toString())
                         onResult(null)
                     }
                 }
@@ -124,15 +128,11 @@ class ApiService {
                     call: Call<Coordinates>,
                     response: Response<Coordinates>
                 ) {
-                    Log.i("json","test")
                     if(response.code() == 201) {
-                        Log.i("json","juhu success")
                         val addedCoordinates = response.body()
                         onResult(addedCoordinates)
                     }
                     else{
-                        Log.i("json",response.code().toString())
-                        Log.i("json", response.body().toString())
                         onResult(null)
                     }
                 }
