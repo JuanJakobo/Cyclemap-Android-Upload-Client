@@ -72,7 +72,8 @@ class ToursFragment : Fragment() {
                     editDialogBuilder.setTitle(R.string.add_new_tour)
                     val editTour = EditText(activity)
                     editDialogBuilder.setView(editTour)
-                    editDialogBuilder.setPositiveButton(R.string.add_tour
+                    editDialogBuilder.setPositiveButton(
+                        R.string.add_tour
                     ) { _, _ ->
                         val newTour = Tour(title = editTour.text.toString())
                         apiService.addTour(newTour) { tour ->
@@ -80,31 +81,31 @@ class ToursFragment : Fragment() {
                             if (tour != null) {
                                 toursList.add(tour)
                                 adapter.notifyDataSetChanged()
-                                barText = R.string.added_tour.toString() + " ${tour.title}(${tour.id})"
+                                barText =
+                                    R.string.added_tour.toString() + " ${tour.title}(${tour.id})"
                             }
                             Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
                                 .show()
                         }
                     }
 
-                    editDialogBuilder.setNegativeButton(R.string.cancel ) { _, _ ->
+                    editDialogBuilder.setNegativeButton(R.string.cancel) { _, _ ->
                     }
                     val dialog = editDialogBuilder.create()
                     dialog.show()
-                    if(tours.size > 0) {
-                        //TODO return also trips?
-                        toursList.clear()
-                        toursList.addAll(tours)
-                        adapter.notifyDataSetChanged()
-                        listView.adapter = adapter
-                        listView.onItemClickListener =
-                            AdapterView.OnItemClickListener { _, _, position, _ ->
-                                val clickedTour = listView.getItemAtPosition(position) as Tour
-                                (activity as MainActivity?)!!.currentTour = clickedTour
-                                findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
-                            }
-                    }
-
+                }
+                if(tours.size > 0) {
+                    //TODO return also trips?
+                    toursList.clear()
+                    toursList.addAll(tours)
+                    adapter.notifyDataSetChanged()
+                    listView.adapter = adapter
+                    listView.onItemClickListener =
+                        AdapterView.OnItemClickListener { _, _, position, _ ->
+                            val clickedTour = listView.getItemAtPosition(position) as Tour
+                            (activity as MainActivity).currentTour = clickedTour
+                            findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
+                        }
                 }
             } else {
                 binding.textViewError.visibility = View.VISIBLE

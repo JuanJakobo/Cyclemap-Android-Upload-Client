@@ -55,16 +55,19 @@ class TripsFragment : Fragment() {
     //TODO use template?
     private fun loadTrips() {
         val listView: ListView = binding.listView
-        val adapter = ArrayAdapter(requireActivity(), R.layout.listview_item, tripsList)
-        val tour = (activity as MainActivity?)!!.currentTour
+        val adapter = ArrayAdapter(requireActivity(),R.layout.listview_item, tripsList)
+        val tour = (activity as MainActivity).currentTour
         if(tour != null){
             val apiService = ApiService()
-            apiService.getTripsForTour(tour.id!!){ trips ->
+            apiService.getTripsForTour(tour.id){ trips ->
                 if (trips != null) {
                     binding.fab.visibility = View.VISIBLE
                     binding.listView.visibility = View.VISIBLE
                     binding.textViewError.visibility = View.GONE
                     binding.fab.setOnClickListener {
+                        if(!(activity as MainActivity).gotSharedCoordinates) {
+                            (activity as MainActivity).currentCoordinates.clear()
+                        }
                         findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                     }
                     if(trips.size > 0) {
@@ -80,13 +83,19 @@ class TripsFragment : Fragment() {
 
                                 val clickedTrip = listView.getItemAtPosition(position) as Trip
                                 (activity as MainActivity).currentTrip = clickedTrip
-                                if((activity as MainActivity).currentCoordinates.isEmpty())
-                                    (activity as MainActivity).currentCoordinates = clickedTrip.coordinates!!
-                                else{
+
+                                if((activity as MainActivity).gotSharedCoordinates){
                                     //Trip Coordinates have been shared by other app and received
                                     //TODO show dialog
-
+                                    //add after or what to do?
+                                }else{
+                                    //TODO different if?
+                                    if(clickedTrip.coordinates?.isNotEmpty() == true)
+                                        (activity as MainActivity).currentCoordinates = clickedTrip.coordinates
+                                    else
+                                        (activity as MainActivity).currentCoordinates.clear()
                                 }
+
                                 findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                             }
                     } else {

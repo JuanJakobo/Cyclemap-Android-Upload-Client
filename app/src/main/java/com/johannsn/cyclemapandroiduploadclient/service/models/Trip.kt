@@ -6,4 +6,8 @@ data class Trip(
     val text: String,
     var tour: Tour? = null,
     val coordinates: MutableList<Coordinates>? = mutableListOf(),
-)
+){
+    override fun toString(): String {
+        return title
+    }
+}

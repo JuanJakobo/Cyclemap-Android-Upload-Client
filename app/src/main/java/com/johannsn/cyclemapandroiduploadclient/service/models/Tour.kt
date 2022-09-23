@@ -6,5 +6,8 @@ data class Tour(
     @SerializedName("id")
     val id: Long = 0,
     val title: String,
-    //val trips: MutableList<Trip>? = mutableListOf(),
-)
+){
+    override fun toString(): String {
+        return title
+    }
+}
