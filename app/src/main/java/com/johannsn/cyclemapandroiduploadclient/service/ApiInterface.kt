@@ -11,10 +11,6 @@ interface ApiInterface {
         "Accept: application/json",
         "Content-Type: application/json",
         "Platform: android")
-    @GET("tours/{id}")
-    fun getTour(
-        @Path("id") id: Long): Call<Tour>
-
     @GET("tours")
     fun getTours(): Call<MutableList<Tour>>
 
@@ -31,7 +27,6 @@ interface ApiInterface {
         "Platform: android")
     @POST("trips/{tripId}/coordinates")
     fun addCoordinates(@Path("tripId") tripId: Long, @Body response: List<Coordinates>): Call<Coordinates>
-    //TODO return value what?
 
     @Headers(
         "Accept: application/json",
