@@ -1,6 +1,7 @@
 package com.johannsn.cyclemapandroiduploadclient.ui.main
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
@@ -16,7 +17,6 @@ import androidx.navigation.ui.navigateUp
 import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.ActivityMainBinding
 import com.johannsn.cyclemapandroiduploadclient.service.FitToGeo
-import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import org.osmdroid.config.Configuration
@@ -31,7 +31,8 @@ class MainActivity : AppCompatActivity() {
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
 
-    internal var currentCoordinates = mutableListOf<Coordinates>()
+    //TODO pass as bundle
+    internal var sharedTrip : Trip? = null
     internal var gotSharedCoordinates = false
 
     internal var currentTour : Tour? = null
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val sp: SharedPreferences = this.getSharedPreferences("loginSaved", MODE_PRIVATE)
+
         if(intent  != null) {
             if (intent.type.equals("message/rfc822")) {
                 val stream = if(intent.action === Intent.ACTION_SEND_MULTIPLE) intent.getParcelableArrayListExtra<Parcelable>(Intent.EXTRA_STREAM) else null
@@ -54,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                         val contentResolver = contentResolver
                         val inputStream = contentResolver?.openInputStream(uri)
                         if(inputStream != null) {
-                            currentCoordinates = test.readInFit(inputStream)
+                            sharedTrip = test.readInFit(inputStream)
                             gotSharedCoordinates = true
                         }
                     } catch (e: IOException) {
@@ -64,8 +67,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
+        //TODO add login fragment
+        val url = sp.getString("url",null)
+        val username = sp.getString("username", null)
+        val password = sp.getString("password", null)
+        //if (username != null && password != null && url != null) {
+            val navController = findNavController(R.id.nav_host_fragment_content_main)
+            appBarConfiguration = AppBarConfiguration(navController.graph)
+            Log.i("tester", "$url and $username and $password")
+        //} else {
+            //TODO go to login screen
+        //}
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
