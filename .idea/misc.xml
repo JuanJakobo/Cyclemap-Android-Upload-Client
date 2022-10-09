@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="app/src/main/res/layout-w1240dp/activity_login.xml" value="0.17578125" />
+        <entry key="app/src/main/res/layout/activity_login.xml" value="0.29891304347826086" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1933876811594203" />
+        <entry key="app/src/main/res/layout/activity_main_new.xml" value="0.29936594202898553" />
+        <entry key="app/src/main/res/layout/activity_main_old.xml" value="0.20358224016145307" />
+        <entry key="app/src/main/res/layout/content_main.xml" value="0.20878623188405798" />
+        <entry key="app/src/main/res/layout/fragment_coordinates.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_first.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_main.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/fragment_second.xml" value="0.20358224016145307" />
+        <entry key="app/src/main/res/layout/fragment_tour.xml" value="0.2140625" />
+        <entry key="app/src/main/res/layout/fragment_tours.xml" value="0.2526041666666667" />
+        <entry key="app/src/main/res/layout/fragment_trip.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_trip_edit.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_trips.xml" value="0.2526041666666667" />
+        <entry key="app/src/main/res/layout/item_tour.xml" value="0.19803229061553987" />
+        <entry key="app/src/main/res/layout/listview_item.xml" value="0.2140625" />
+        <entry key="app/src/main/res/menu/menu_main.xml" value="0.21510416666666668" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.181" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.181" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.1933876811594203" />
+      </ProjectState>
+    </option>
   </component>
 </project>
