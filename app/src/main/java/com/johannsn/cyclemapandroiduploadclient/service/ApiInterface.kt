@@ -1,6 +1,5 @@
 package com.johannsn.cyclemapandroiduploadclient.service
 
-import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import retrofit2.Call
@@ -19,14 +18,20 @@ interface ApiInterface {
         "Content-Type: application/json",
         "Platform: android")
     @POST("tours")
-    fun addTour(@Body response: Tour): Call<Tour>
+    fun addTour(@Header("Authorization") auth: String, @Body response: Tour): Call<Tour>
 
     @Headers(
         "Accept: application/json",
         "Content-Type: application/json",
         "Platform: android")
-    @POST("trips/{tripId}/coordinates")
-    fun addCoordinates(@Path("tripId") tripId: Long, @Body response: List<Coordinates>): Call<Coordinates>
+    @PUT("tours/{tourId}")
+    fun updateTour(@Header("Authorization") auth: String, @Path("tourId") tourId: Long, @Body response: Tour): Call<Tour>
+
+    @Headers(
+        "Accept: application/json",
+        "Platform: android")
+    @DELETE("tours/{tourId}")
+    fun deleteTour(@Header("Authorization") auth: String, @Path("tourId") tourId: Long): Call<Tour>
 
     @Headers(
         "Accept: application/json",
@@ -40,6 +45,18 @@ interface ApiInterface {
         "Content-Type: application/json",
         "Platform: android")
     @POST("tours/{tourId}/trips")
-    fun addTrip(@Path("tourId") tourId: Long, @Body response: Trip): Call<Trip>
+    fun addTrip(@Header("Authorization") auth: String, @Path("tourId") tourId: Long, @Body response: Trip): Call<Trip>
 
-    }
+    @Headers(
+        "Accept: application/json",
+        "Content-Type: application/json",
+        "Platform: android")
+    @PUT("tours/{tourId}/trips/{tripId}")
+    fun updateTrip(@Header("Authorization") auth: String, @Path("tourId") tourId: Long, @Path("tripId") tripId: Long, @Body response: Trip): Call<Trip>
+
+    @Headers(
+        "Accept: application/json",
+        "Platform: android")
+    @DELETE("tours/{tourId}/trips/{tripId}")
+    fun deleteTrip(@Header("Authorization") auth: String, @Path("tourId") tourId: Long, @Path("tripId") tripId: Long): Call<Trip>
+}
