@@ -3,17 +3,20 @@ package com.johannsn.cyclemapandroiduploadclient.service
 import android.util.Log
 import com.garmin.fit.*
 import com.johannsn.cyclemapandroiduploadclient.service.models.Coordinates
+import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import java.io.IOException
 import java.io.InputStream
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
-val coordinates = mutableListOf<Coordinates>()
+
 var counter = 0
-var departer = 3
+var departer = 15
+var trip = Trip()
 
 class FitToGeo {
 
-    fun readInFit(open: InputStream): MutableList<Coordinates> {
+    fun readInFit(open: InputStream): Trip {
 
         val decode = Decode()
         val messBroadcaster = MesgBroadcaster(decode)
@@ -54,36 +57,49 @@ class FitToGeo {
             throw RuntimeException(e)
         }
 
-        Log.i("Fit", "Decoded FIT file.")
-        return coordinates
+        trip.ascent = (trip.ascent * 100).roundToInt() / 100.0
+        trip.descent = (trip.descent * 100).roundToInt() / 100.0
+        trip.distance = (trip.distance * 100).roundToInt() / 100.0
+        return trip
     }
 
-    //private vs internal?
     private class Listener : RecordMesgListener {
         override fun onMesg(mesg: RecordMesg) {
-            //TODO read distance, meters
-            Log.i("fitTo",RecordMesg.DistanceFieldNum.toString())
-            Log.i("fitTo",RecordMesg.AltitudeFieldNum.toString())
+
+            //write descent and ascent
+            getDeveloperValue((mesg as Mesg?)!!)
+            trip.distance = getValue(mesg, RecordMesg.DistanceFieldNum)
+
             if(counter % departer == 0) {
-                val latValue = getGeoPoint(mesg, RecordMesg.PositionLatFieldNum)
-                val lngValue = getGeoPoint(mesg, RecordMesg.PositionLongFieldNum)
-                val altitudeValue = getGeoPoint(mesg, RecordMesg.AltitudeFieldNum)
+                val latValue = getValue(mesg, RecordMesg.PositionLatFieldNum)
+                val lngValue = getValue(mesg, RecordMesg.PositionLongFieldNum)
                 if (latValue != 0.0 && lngValue != 0.0) {
-                    //TODO add altitude
-                    coordinates.add(Coordinates(lngValue,latValue))
+                    trip.coordinates.add(Coordinates(lngValue,latValue))
                 }
             }
             counter++
         }
 
-        private fun getGeoPoint(mess: RecordMesg, fieldID: Int): Double {
-            val fields = mess.getOverrideField(fieldID.toShort())
-            val profileField = Factory.createField(mess.num, fieldID) ?: return 0.0
+        private fun getDeveloperValue(mesg: Mesg) {
+            for (developerField in mesg.developerFields) {
+                if (developerField.numValues < 1) continue
+                if (developerField.isDefined) {
+                    when (developerField.name) {
+                        "descent"-> trip.descent = developerField.getDoubleValue(0)
+                        "ascent"-> trip.ascent = developerField.getDoubleValue(0)
+                    }
+                }
+            }
+        }
+
+        private fun getValue(mesg: RecordMesg, fieldID: Int): Double {
+            val fields = mesg.getOverrideField(fieldID.toShort())
+            val profileField = Factory.createField(mesg.num, fieldID) ?: return 0.0
             for (field in fields) {
-                if (profileField.name == "altitude")
-                    return (field.value as Double).toDouble()
-                else if (profileField.name == "position_lat" || profileField.name == "position_long")
-                    return (field.value as Int).toDouble() * (180 / 2.0.pow(31.0))
+                return if (profileField.name == "position_lat" || profileField.name == "position_long")
+                    (field.value as Int).toDouble() * (180 / 2.0.pow(31.0))
+                else
+                    field.value as Double
             }
             return 0.0
         }
