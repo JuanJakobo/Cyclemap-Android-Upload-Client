@@ -43,17 +43,15 @@ class ToursFragment : Fragment() {
 
         //TODO move strings to string file
         (activity as MainActivity).supportActionBar?.setSubtitle(R.string.select_tour)
+        binding.downloadProgressCycle.visibility = View.VISIBLE
 
         (activity as MainActivity).currentTour = null
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
-
             loadTours()
             swipeRefreshLayout.isRefreshing = false
         }
-        //TODO add loading screen
-        //TODO if tours are loaded, do not reload, therefore should not delete them in trips
-        //ah tours not saved anywhere, save?
+        //TODO does not load if passed items
         loadTours()
 
     }
@@ -76,14 +74,15 @@ class ToursFragment : Fragment() {
                         R.string.add_tour
                     ) { _, _ ->
                         val newTour = Tour(title = editTour.text.toString())
+                        binding.downloadProgressCycle.visibility = View.VISIBLE
                         apiService.addTour(newTour) { tour ->
-                            var barText = R.string.failed_to_create_tour.toString()
+                            var barText = R.string.failed_to_create_tour
                             if (tour != null) {
                                 toursList.add(tour)
                                 adapter.notifyDataSetChanged()
-                                barText =
-                                    R.string.added_tour.toString() + " ${tour.title}(${tour.id})"
+                                barText = R.string.added_tour //+ " ${tour.title}(${tour.id})"
                             }
+                            binding.downloadProgressCycle.visibility = View.GONE
                             Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
                                 .show()
                         }
@@ -94,19 +93,41 @@ class ToursFragment : Fragment() {
                     val dialog = editDialogBuilder.create()
                     dialog.show()
                 }
-                if(tours.size > 0) {
-                    //TODO return also trips?
-                    toursList.clear()
-                    toursList.addAll(tours)
-                    adapter.notifyDataSetChanged()
-                    listView.adapter = adapter
-                    listView.onItemClickListener =
-                        AdapterView.OnItemClickListener { _, _, position, _ ->
-                            val clickedTour = listView.getItemAtPosition(position) as Tour
-                            (activity as MainActivity).currentTour = clickedTour
-                            findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
+                toursList.clear()
+                listView.adapter = adapter
+                listView.onItemClickListener =
+                    AdapterView.OnItemClickListener { _, _, position, _ ->
+                        val clickedTour = listView.getItemAtPosition(position) as Tour
+                        (activity as MainActivity).currentTour = clickedTour
+                        findNavController().navigate(R.id.action_ToursFragment_to_TripsFragment)
+                    }
+                listView.onItemLongClickListener =
+                    AdapterView.OnItemLongClickListener { _, _, position, _ ->
+                        val clickedTour = listView.getItemAtPosition(position) as Tour
+                        val dialogBuilder = AlertDialog.Builder(activity)
+                        dialogBuilder.setTitle("Are you sure you want to delete Tour $clickedTour.")
+                        dialogBuilder.setPositiveButton(
+                            "Delete Tour"
+                        ) { _, _ ->
+                            binding.downloadProgressCycle.visibility = View.VISIBLE
+                            apiService.deleteTour(clickedTour.id)
+                            //TODO only on success
+                            toursList.remove(clickedTour)
+                            adapter.notifyDataSetChanged()
+                            binding.downloadProgressCycle.visibility = View.GONE
                         }
+
+                        dialogBuilder.setNegativeButton(R.string.cancel) { _, _ ->
+                        }
+                        val dialog = dialogBuilder.create()
+                        dialog.show()
+                        true
+                    }
+
+                if(tours.size > 0) {
+                    toursList.addAll(tours)
                 }
+                adapter.notifyDataSetChanged()
             } else {
                 binding.textViewError.visibility = View.VISIBLE
                 binding.fab.visibility = View.GONE
@@ -116,6 +137,7 @@ class ToursFragment : Fragment() {
                 Snackbar.make(requireView(),R.string.failed_to_load, Snackbar.LENGTH_LONG)
                     .show()
             }
+            binding.downloadProgressCycle.visibility = View.GONE
         }
 
     }
