@@ -7,20 +7,12 @@
     tools:context=".ui.main.TripsFragment">
 
     <ProgressBar
-        android:id="@+id/myProgress"
-        style="?android:attr/progressBarStyleHorizontal"
+        android:id="@+id/downloadProgressCycle"
+        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:progress="0"
         android:visibility="gone" />
-    <TextView
-        android:id="@+id/textViewLoading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/loading"
-        android:visibility="gone"
-        android:layout_gravity="center"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/refreshLayout"
