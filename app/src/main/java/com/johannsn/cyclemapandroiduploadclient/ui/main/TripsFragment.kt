@@ -1,5 +1,6 @@
 package com.johannsn.cyclemapandroiduploadclient.ui.main
 
+import android.app.AlertDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -40,6 +41,7 @@ class TripsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.select_trip)
+        binding.downloadProgressCycle.visibility = View.VISIBLE
 
         (activity as MainActivity).currentTrip = null
         val swipeRefreshLayout = binding.refreshLayout
@@ -61,12 +63,15 @@ class TripsFragment : Fragment() {
             val apiService = ApiService()
             apiService.getTripsForTour(tour.id){ trips ->
                 if (trips != null) {
-                    binding.fab.visibility = View.VISIBLE
                     binding.listView.visibility = View.VISIBLE
                     binding.textViewError.visibility = View.GONE
+
+                    binding.fab.visibility = if((activity as MainActivity).gotSharedCoordinates) View.VISIBLE else View.GONE
                     binding.fab.setOnClickListener {
+                        //TODO check if sharedTrip is null
+                        (activity as MainActivity).currentTrip =  (activity as MainActivity).sharedTrip
                         if(!(activity as MainActivity).gotSharedCoordinates) {
-                            (activity as MainActivity).currentCoordinates.clear()
+                            (activity as MainActivity).sharedTrip?.coordinates?.clear()
                         }
                         findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
                     }
@@ -74,29 +79,85 @@ class TripsFragment : Fragment() {
                         tripsList.clear()
                         tripsList.addAll(trips)
                         listView.adapter = adapter
-                        //TODO move to tours, beginning and end
                         listView.onItemClickListener =
                             AdapterView.OnItemClickListener { _, _, position, _ ->
-                                binding.myProgress.visibility = View.VISIBLE
-                                binding.textViewLoading.visibility = View.VISIBLE
-                                binding.myProgress.progress = 40
+
+                                binding.downloadProgressCycle.visibility = View.VISIBLE
 
                                 val clickedTrip = listView.getItemAtPosition(position) as Trip
                                 (activity as MainActivity).currentTrip = clickedTrip
 
-                                if((activity as MainActivity).gotSharedCoordinates){
-                                    //Trip Coordinates have been shared by other app and received
-                                    //TODO show dialog
-                                    //add after or what to do?
-                                }else{
-                                    //TODO different if?
-                                    if(clickedTrip.coordinates?.isNotEmpty() == true)
-                                        (activity as MainActivity).currentCoordinates = clickedTrip.coordinates
-                                    else
+                                if ((activity as MainActivity).gotSharedCoordinates) {
+                                    if(clickedTrip.coordinates.isNotEmpty()) {
+                                        val dialogBuilder = AlertDialog.Builder(activity)
+                                        dialogBuilder.setTitle("The Trip already contains Coordinates. What do you want to do?")
+                                        dialogBuilder.setPositiveButton(
+                                            "Add before"
+                                        ) { _, _ ->
+                                            //get currentTrip once?
+                                            //TODO has to add up later or rename...
+                                            /*
+                                            (activity as MainActivity).sharedTrip?.coordinates?.let {
+                                                clickedTrip.coordinates.addAll(
+                                                    it
+                                                )
+                                            }
+                                            */
+                                            //(activity as MainActivity).currentCoordinates = clickedTrip.coordinates
+                                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                                        }
+                                        dialogBuilder.setNegativeButton(
+                                            "Add after"
+                                        ) { _, _ ->
+                                            //TODO
+                                            //((activity) as MainActivity).sharedTrip..addAll(
+                                                //clickedTrip.coordinates
+                                            //)
+                                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                                        }
+
+                                        dialogBuilder.setNeutralButton(R.string.cancel) { _, _ ->
+                                        }
+                                        val dialog = dialogBuilder.create()
+                                        dialog.show()
+                                        //TODO use bundle
+                                    }
+                                    (activity as MainActivity).currentTrip =  (activity as MainActivity).sharedTrip
+                                } else {
+                                    /*
+                                    if(clickedTrip.coordinates.isNotEmpty()) {
+                                        //TODO pass via bundle?
+                                        (activity as MainActivity).currentCoordinates =
+                                            clickedTrip.coordinates
+                                    }else {
                                         (activity as MainActivity).currentCoordinates.clear()
+                                    }
+                                     */
+                                    findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                                }
+                            }
+                        listView.onItemLongClickListener =
+                            AdapterView.OnItemLongClickListener { _, _, position, _ ->
+                                val clickedTrip = listView.getItemAtPosition(position) as Trip
+                                val dialogBuilder = AlertDialog.Builder(activity)
+                                dialogBuilder.setTitle("Are you sure you want to delete Trip $clickedTrip.")
+                                dialogBuilder.setPositiveButton(
+                                    "Delete Tour"
+                                ) { _, _ ->
+                                    binding.downloadProgressCycle.visibility = View.VISIBLE
+                                    //TODO does not work
+                                    apiService.deleteTrip(clickedTrip)
+                                    //TODO only on success
+                                    tripsList.remove(clickedTrip)
+                                    adapter.notifyDataSetChanged()
+                                    binding.downloadProgressCycle.visibility = View.GONE
                                 }
 
-                                findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                                dialogBuilder.setNegativeButton(R.string.cancel) { _, _ ->
+                                }
+                                val dialog = dialogBuilder.create()
+                                dialog.show()
+                                true
                             }
                     } else {
                         binding.textViewError.visibility = View.VISIBLE
@@ -114,6 +175,7 @@ class TripsFragment : Fragment() {
                         .show()
                     //TODO catch error
                 }
+                binding.downloadProgressCycle.visibility = View.GONE
 
             }
         }
