@@ -36,5 +36,7 @@
     <string name="hint_trip_title">Title Trip</string>
     <string name="hint_trip_text">Description of the Trip</string>
     <string name="choose_file">Choose file</string>
+    <string name="hint_password">Password</string>
+    <string name="tourdata">Distance: %g m, ascent: %g m, descent: %g m</string>
 
 </resources>

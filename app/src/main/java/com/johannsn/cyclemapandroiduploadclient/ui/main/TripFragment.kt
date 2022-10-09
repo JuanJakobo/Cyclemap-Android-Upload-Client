@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.johannsn.cyclemapandroiduploadclient.R
 import com.johannsn.cyclemapandroiduploadclient.databinding.FragmentTripBinding
@@ -32,64 +33,101 @@ class TripFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if ((activity as MainActivity).currentCoordinates.isNotEmpty()) {
-            val map = binding.map
-            map.visibility = View.VISIBLE
-            binding.chooseFile.visibility = View.GONE
-            map.setTileSource(TileSourceFactory.MAPNIK)
-            map.setMultiTouchControls(true)
-            val line = Polyline(map)
-            for (coordinate in (activity as MainActivity).currentCoordinates)
-                line.addPoint(GeoPoint(coordinate.lat, coordinate.lng))
-            map.overlays.add(line)
-            map.post { map.zoomToBoundingBox(line.bounds.increaseByScale(1.7f), false) }
-        } else {
-            binding.map.visibility = View.GONE
-            binding.chooseFile.visibility = View.VISIBLE
-            //TODO map overlay
-            //map.overlays.
-        }
 
-        if ((activity as MainActivity).currentTrip != null) {
-            //put
-            (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.update_trip)
-            binding.buttonEdit.setText(R.string.update)
-            binding.textViewTitle.setText((activity as MainActivity).currentTrip?.title)
-            binding.textViewText.setText((activity as MainActivity).currentTrip?.text)
-            binding.buttonEdit.setOnClickListener {
+        val currentTrip = (activity as MainActivity).currentTrip
+        //TODO fix
+        if (currentTrip != null) {
+            binding.textViewData.text = getString(R.string.tourdata,currentTrip.distance,currentTrip.ascent,currentTrip.descent)
+            if (currentTrip.coordinates.isNotEmpty()) {
+                val map = binding.map
+                map.visibility = View.VISIBLE
+                map.setTileSource(TileSourceFactory.MAPNIK)
+                map.setMultiTouchControls(true)
+                val line = Polyline(map)
+                //TODO fix
+                for (coordinate in currentTrip.coordinates)
+                    line.addPoint(GeoPoint(coordinate.lat, coordinate.lng))
+                map.overlays.add(line)
+                map.post { map.zoomToBoundingBox(line.bounds.increaseByScale(1.7f), false) }
+            } else {
+                binding.map.visibility = View.GONE
             }
-        } else {
-            //post
-            (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.create_trip)
-            binding.buttonEdit.setText(R.string.save)
+
+            val update = currentTrip.text.isNotEmpty() && currentTrip.title.isNotEmpty()
+
+            if (update) {
+                //put
+                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.update_trip)
+                binding.buttonEdit.setText(R.string.update)
+                binding.textViewTitle.setText((activity as MainActivity).currentTrip?.title)
+                binding.textViewText.setText((activity as MainActivity).currentTrip?.text)
+            } else {
+                //post
+                (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.create_trip)
+                binding.buttonEdit.setText(R.string.save)
+            }
             binding.buttonEdit.setOnClickListener {
-                if ((activity as MainActivity).currentTour != null) {
+                if (binding.textViewTitle.text.isBlank() || binding.textViewText.text.isBlank()) {
+                    Snackbar.make(view, "Title and Text cannot be empty.", Snackbar.LENGTH_SHORT)
+                        .show()
+                } else {
                     val apiService = ApiService()
+                    binding.downloadProgressCycle.visibility = View.VISIBLE
+                    //val coordinates = (activity as MainActivity).currentCoordinates
                     val newTrip = Trip(
                         title = binding.textViewTitle.text.toString(),
                         text = binding.textViewText.text.toString(),
-                        coordinates = (activity as MainActivity).currentCoordinates,
+                        coordinates = currentTrip.coordinates,
+                        distance = currentTrip.distance,
+                        ascent = currentTrip.ascent,
+                        descent = currentTrip.descent,
                     )
-                    //TODO change
-                    val tourId = (activity as MainActivity).currentTour?.id
-                    if (tourId != null) {
-                        apiService.addTrip(tourId, newTrip) { trip ->
-                            var barText = R.string.failed_to_create_trip.toString()
+                    if (update) {
+                        //TODO somewhere else...
+                        newTrip.tour = currentTrip.tour
+
+                        apiService.updateTrip(newTrip) { trip ->
+                            var sucess = false
+                            //TODO convert
+                            var barText = "Failed to update"
                             if (trip != null) {
                                 barText =
-                                    R.string.create_trip.toString() + "${trip.title}(${trip.id})."
+                                    R.string.create_trip.toString() + "Updated ${trip.title}. (${trip.id})."
+                                sucess = true
                             }
-                            Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
-                                .show()
+                            drawResult(view, barText, sucess)
+                        }
+
+                    } else {
+                        (activity as MainActivity).currentTour?.id?.let {
+                            apiService.addTrip(it, newTrip) { trip ->
+                                var sucess = false
+                                var barText = "Failed to create Trip"
+                                if (trip != null) {
+                                    barText =
+                                        R.string.create_trip.toString() + "Created ${trip.title}. (${trip.id})."
+                                    sucess = true
+                                }
+                                drawResult(view, barText, sucess)
+                            }
                         }
                     }
                 }
             }
-            //TODO Do in both cases
-            (activity as MainActivity).currentCoordinates.clear()
-            //findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
         }
     }
+
+    private fun drawResult(currentView: View, barText: String, sucess: Boolean){
+        binding.downloadProgressCycle.visibility = View.GONE
+        Snackbar.make(currentView, barText, Snackbar.LENGTH_LONG)
+            .show()
+        if (sucess) {
+            //TODO clear the shared one
+            (activity as MainActivity).gotSharedCoordinates = false
+            findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
+        }
+    }
+
 
 
     override fun onDestroyView() {
