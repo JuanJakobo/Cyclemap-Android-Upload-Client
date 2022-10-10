@@ -13,4 +13,22 @@ data class Trip(
     override fun toString(): String {
         return "$title (Distance $distance m)"
     }
+
+    private fun add(trip: Trip){
+        this.distance += trip.distance
+        this.descent += trip.descent
+        this.ascent += trip.ascent
+    }
+
+    fun addAtEnd(trip: Trip){
+        add(trip)
+        this.coordinates.addAll(trip.coordinates)
+    }
+
+    fun addAtBegin(trip: Trip){
+        add(trip)
+        trip.coordinates.addAll(this.coordinates)
+        this.coordinates.clear()
+        this.coordinates.addAll(trip.coordinates)
+    }
 }

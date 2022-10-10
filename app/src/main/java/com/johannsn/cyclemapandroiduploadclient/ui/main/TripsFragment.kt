@@ -54,6 +54,91 @@ class TripsFragment : Fragment() {
         loadTrips()
     }
 
+
+    private fun createListViewAdapterListener(){
+        val listView: ListView = binding.listView
+        listView.adapter = adapter
+        listView.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, _ ->
+
+                binding.downloadProgressCycle.visibility = View.VISIBLE
+
+                val clickedTrip = listView.getItemAtPosition(position) as Trip
+                (activity as MainActivity).currentTrip = clickedTrip
+
+                if ((activity as MainActivity).gotSharedCoordinates) {
+                    if(clickedTrip.coordinates.isNotEmpty()) {
+                        val dialogBuilder = AlertDialog.Builder(activity)
+                        dialogBuilder.setTitle(R.string.trip_already_got_coordinates)
+                        dialogBuilder.setPositiveButton(
+                            R.string.add_before
+                        ) { _, _ ->
+                            (activity as MainActivity).sharedTrip?.let {
+                                clickedTrip.addAtBegin(
+                                    it
+                                )
+                            }
+
+                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                        }
+                        dialogBuilder.setNegativeButton(
+                            R.string.add_after
+                        ) { _, _ ->
+                            (activity as MainActivity).sharedTrip?.let {
+                                clickedTrip.addAtEnd(
+                                    it
+                                )
+                            }
+
+                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                        }
+
+                        dialogBuilder.setNeutralButton(R.string.cancel) { _, _ ->
+                        }
+                        val dialog = dialogBuilder.create()
+                        dialog.show()
+                    }
+                    (activity as MainActivity).currentTrip = clickedTrip
+                } else {
+                    findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+                }
+            }
+        listView.onItemLongClickListener =
+            AdapterView.OnItemLongClickListener { view, _, position, _ ->
+                val clickedTrip = listView.getItemAtPosition(position) as Trip
+                val dialogBuilder = AlertDialog.Builder(activity)
+                dialogBuilder.setTitle(getString(R.string.do_you_want_to_delete_tour,clickedTrip.title))
+                dialogBuilder.setPositiveButton(
+                    R.string.delete_trip
+                ) { _, _ ->
+                    binding.downloadProgressCycle.visibility = View.VISIBLE
+                    apiService.deleteTrip(clickedTrip){
+                        var barText = getString(R.string.failed_to_delete_trip)
+                        if (it) {
+                            tripsList.remove(clickedTrip)
+                            adapter?.notifyDataSetChanged()
+                            barText = getString(R.string.deleted_trip,clickedTrip.title,clickedTrip.id)
+                            if(tripsList.isEmpty()) {
+                                binding.textViewError.visibility = View.VISIBLE
+                                binding.listView.visibility = View.GONE
+                                binding.textViewError.setText(R.string.no_tours)
+                            }
+                        }
+                        Snackbar.make(view, barText, Snackbar.LENGTH_LONG)
+                            .show()
+                    }
+                    binding.downloadProgressCycle.visibility = View.GONE
+                }
+
+                dialogBuilder.setNegativeButton(R.string.cancel) { _, _ ->
+                }
+                val dialog = dialogBuilder.create()
+                dialog.show()
+                true
+            }
+
+    }
+
     //TODO use template?
     private fun loadTrips() {
         val listView: ListView = binding.listView
