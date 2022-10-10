@@ -10,9 +10,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 
-var counter = 0
-var departer = 15
-var trip = Trip()
+var trip: Trip? = null
 
 class FitToGeo {
 
@@ -21,16 +19,8 @@ class FitToGeo {
         val decode = Decode()
         val messBroadcaster = MesgBroadcaster(decode)
         val listener = Listener()
-        /*
-        TODO
-        try {
-            inputStream = open
-        } catch (e: IOException) {
-            throw RuntimeException("Error opening file ")
-        }
-         */
+        trip = Trip()
 
-        counter = 0
         messBroadcaster.addListener(listener as RecordMesgListener)
 
         try {
@@ -46,8 +36,6 @@ class FitToGeo {
                 } catch (f: IOException) {
                     throw RuntimeException(f)
                 }
-                //TODO return error //throw?
-                //return
             }
         }
 
@@ -57,24 +45,23 @@ class FitToGeo {
             throw RuntimeException(e)
         }
 
-        trip.ascent = (trip.ascent * 100).roundToInt() / 100.0
-        trip.descent = (trip.descent * 100).roundToInt() / 100.0
-        trip.distance = (trip.distance * 100).roundToInt() / 100.0
-        return trip
+        return trip as Trip
     }
 
     private class Listener : RecordMesgListener {
+        var counter = 0 //TODO test if is really 0
+        var departer = 15
+
         override fun onMesg(mesg: RecordMesg) {
 
-            //write descent and ascent
-            getDeveloperValue((mesg as Mesg?)!!)
-            trip.distance = getValue(mesg, RecordMesg.DistanceFieldNum)
-
             if(counter % departer == 0) {
+                //write descent and ascent
+                getDeveloperValue(mesg)
+                trip?.distance = getValue(mesg, RecordMesg.DistanceFieldNum).roundToInt()
                 val latValue = getValue(mesg, RecordMesg.PositionLatFieldNum)
                 val lngValue = getValue(mesg, RecordMesg.PositionLongFieldNum)
                 if (latValue != 0.0 && lngValue != 0.0) {
-                    trip.coordinates.add(Coordinates(lngValue,latValue))
+                    trip?.coordinates?.add(Coordinates(lngValue,latValue))
                 }
             }
             counter++
@@ -85,8 +72,8 @@ class FitToGeo {
                 if (developerField.numValues < 1) continue
                 if (developerField.isDefined) {
                     when (developerField.name) {
-                        "descent"-> trip.descent = developerField.getDoubleValue(0)
-                        "ascent"-> trip.ascent = developerField.getDoubleValue(0)
+                        "descent"-> trip?.descent = developerField.getDoubleValue(0).roundToInt()
+                        "ascent"-> trip?.ascent = developerField.getDoubleValue(0).roundToInt()
                     }
                 }
             }

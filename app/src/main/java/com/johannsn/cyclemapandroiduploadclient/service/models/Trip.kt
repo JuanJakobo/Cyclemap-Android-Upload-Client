@@ -5,9 +5,9 @@ data class Trip(
     val title: String = "",
     val text: String = "",
     var tour: Tour? = null,
-    var distance: Double = 0.0,
-    var descent: Double = 0.0,
-    var ascent: Double = 0.0,
+    var distance: Int = 0,
+    var descent: Int = 0,
+    var ascent: Int = 0,
     val coordinates: MutableList<Coordinates> = mutableListOf(),
 ){
     override fun toString(): String {
