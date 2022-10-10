@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
 
-    //TODO pass as bundle
+    //TODO pass as bundle?
     internal var sharedTrip : Trip? = null
     internal var gotSharedCoordinates = false
 
@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val sp: SharedPreferences = this.getSharedPreferences("loginSaved", MODE_PRIVATE)
 
         if(intent  != null) {
             if (intent.type.equals("message/rfc822")) {
@@ -68,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //TODO add login fragment
+        val sp: SharedPreferences = this.getSharedPreferences("loginSaved", MODE_PRIVATE)
         val url = sp.getString("url",null)
         val username = sp.getString("username", null)
         val password = sp.getString("password", null)
@@ -76,7 +76,6 @@ class MainActivity : AppCompatActivity() {
             appBarConfiguration = AppBarConfiguration(navController.graph)
             Log.i("tester", "$url and $username and $password")
         //} else {
-            //TODO go to login screen
         //}
 
     }

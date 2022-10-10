@@ -35,7 +35,6 @@ class TripFragment : Fragment() {
 
 
         val currentTrip = (activity as MainActivity).currentTrip
-        //TODO fix
         if (currentTrip != null) {
             binding.textViewData.text = getString(R.string.tourdata,currentTrip.distance,currentTrip.ascent,currentTrip.descent)
             if (currentTrip.coordinates.isNotEmpty()) {
@@ -44,7 +43,6 @@ class TripFragment : Fragment() {
                 map.setTileSource(TileSourceFactory.MAPNIK)
                 map.setMultiTouchControls(true)
                 val line = Polyline(map)
-                //TODO fix
                 for (coordinate in currentTrip.coordinates)
                     line.addPoint(GeoPoint(coordinate.lat, coordinate.lng))
                 map.overlays.add(line)
@@ -83,12 +81,14 @@ class TripFragment : Fragment() {
                         descent = currentTrip.descent,
                     )
                     if (update) {
-                        //TODO somewhere else...
                         newTrip.tour = currentTrip.tour
 
+
+                        drawResult(view, getString(R.string.not_implemented), false)
+                        /*
+                        TODO implement
                         apiService.updateTrip(newTrip) { trip ->
                             var sucess = false
-                            //TODO convert
                             var barText = "Failed to update"
                             if (trip != null) {
                                 barText =
@@ -122,7 +122,6 @@ class TripFragment : Fragment() {
         Snackbar.make(currentView, barText, Snackbar.LENGTH_LONG)
             .show()
         if (sucess) {
-            //TODO clear the shared one
             (activity as MainActivity).gotSharedCoordinates = false
             findNavController().navigate(R.id.action_TripFragment_to_TripsFragment)
         }

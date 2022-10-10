@@ -12,31 +12,44 @@
 
     <string name="action_settings">Settings</string>
 
+    <!-- global -->
+    <string name="not_implemented">not implemented</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
     <string name="loading">Loading</string>
     <string name="failed_to_load">Failed to load.</string>
     <!-- Tour Fragment -->
     <string name="select_tour">Select Tour</string>
+    <string name="no_tours">There are no Tours.</string>
     <string name="failed_to_load_tours">Failed to load Tours.\n Please swipe down to refresh</string>
     <string name="add_new_tour">Add new Tour</string>
     <string name="add_tour">Add Tour</string>
+    <string name="edit_tour">Edit tour %d</string>
     <string name="failed_to_create_tour">Failed to create Tour</string>
-    <string name="added_tour">Added Tour</string>
+    <string name="failed_to_delete_tour">Failed to delete Tour</string>
+    <string name="deleted_tour">Deleted Tour %s (%d)</string>
+    <string name="added_tour">Added Tour %s (%d)</string>
     <string name="cancel">Cancel</string>
     <!-- Trips Fragment -->
     <string name="select_trip">Select Trip</string>
     <string name="failed_to_load_trips">Failed to load Trips.\n Please swipe down to refresh</string>
     <string name="no_trips_for_tour">There are no Trips for this Tour.</string>
+    <string name="trip_already_got_coordinates">The Trip already contains Coordinates. What do you want to do?</string>
+    <string name="add_before">add before</string>
+    <string name="add_after">add after</string>
+    <string name="do_you_want_to_delete_tour">Are you sure you want to delete Trip %S</string>
+    <string name="delete_trip">Delete Trip</string>
+    <string name="failed_to_delete_trip">Failed to delete Trip</string>
+    <string name="deleted_trip">Deleted Trip %s (%d)</string>
     <!-- Trip Fragment -->
     <string name="update_trip">Update Trip</string>
     <string name="create_trip">Create Trip</string>
-    <string name="save">Save</string>
-    <string name="update">Update</string>
-    <string name="failed_to_create_trip">Failed to create Trip.</string>
-    <string name="added_trip">Added Trip</string>
+    <string name="failed_to_create_trip">Failed to create Trip</string>
+    <string name="added_trip">Added Trip %s (%d)</string>
     <string name="hint_trip_title">Title Trip</string>
     <string name="hint_trip_text">Description of the Trip</string>
-    <string name="choose_file">Choose file</string>
-    <string name="hint_password">Password</string>
-    <string name="tourdata">Distance: %g m, ascent: %g m, descent: %g m</string>
+    <string name="tourdata">Distance: %d m, ascent: %d m, descent: %d m</string>
+    <string name="title_text_cannot_be_empty">Title and Text cannot be empty.</string>
 
 </resources>
