@@ -2,6 +2,7 @@ package com.johannsn.cyclemapandroiduploadclient.service
 
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -31,7 +32,7 @@ interface ApiInterface {
         "Accept: application/json",
         "Platform: android")
     @DELETE("tours/{tourId}")
-    fun deleteTour(@Header("Authorization") auth: String, @Path("tourId") tourId: Long): Call<Tour>
+    fun deleteTour(@Header("Authorization") auth: String, @Path("tourId") tourId: Long): Call<ResponseBody>
 
     @Headers(
         "Accept: application/json",

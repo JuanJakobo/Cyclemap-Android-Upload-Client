@@ -4,6 +4,7 @@ import android.util.Log
 import com.johannsn.cyclemapandroiduploadclient.service.models.Tour
 import com.johannsn.cyclemapandroiduploadclient.service.models.Trip
 import okhttp3.Credentials
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -52,9 +53,8 @@ class ApiService {
                         val addedTour = response.body()
                         onResult(addedTour)
                     }
+                    //TODO add auth error to all functions!, return response code and message
                     else if(response.code() == 401){
-                        //TODO add auth error to all functions!
-                        Log.i("json","test")
                         onResult(null)
                     }
                     else{
@@ -89,18 +89,23 @@ class ApiService {
         )
     }
 
-    fun deleteTour(tourId: Long){
+    fun deleteTour(tourId: Long, onResult: (Boolean) -> Unit){
         val retrofit = ServiceBuilder.buildService(ApiInterface::class.java)
         retrofit.deleteTour(getCredentials(),tourId).enqueue(
-            object : Callback<Tour> {
-                override fun onResponse(call: Call<Tour>, response: Response<Tour>) {
-                    Log.i("json",response.code().toString())
-                    Log.i("json",response.body().toString())
-
+            object : Callback<ResponseBody> {
+                override fun onResponse(
+                    call: Call<ResponseBody>,
+                    response: Response<ResponseBody>
+                ) {
+                    if (response.code() == 204)
+                        onResult(true)
+                    else
+                        onResult(false)
                 }
 
-                override fun onFailure(call: Call<Tour>, t: Throwable) {
-                    TODO("Not yet implemented")
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    t.message?.let { Log.e("json", it) }
+                    onResult(false)
                 }
             }
         )
@@ -137,6 +142,7 @@ class ApiService {
             }
 
             override fun onFailure(call: Call<MutableList<Trip>>, t: Throwable) {
+                //TODO return to user...
                 t.message?.let { Log.e("json", it) }
                 onResult(null)
             }
@@ -156,9 +162,7 @@ class ApiService {
                         onResult(addedTrip)
                     }
                     else{
-                        //TODO add
-                        Log.i("tester",response.body().toString())
-                        Log.i("tester",response.message().toString())
+                        //TODO add return what went wrong
                         onResult(null)
                     }
                 }
@@ -173,7 +177,7 @@ class ApiService {
     fun updateTrip(trip: Trip, onResult: (Trip?) -> Unit){
         val retrofit = ServiceBuilder.buildService(ApiInterface::class.java)
         //TODO change...
-        retrofit.updateTrip(getCredentials(), trip.tour?.id!!,trip.id,trip).enqueue(
+        retrofit.updateTrip(getCredentials(), trip.tour?.id ?: 0,trip.id,trip).enqueue(
             object : Callback<Trip> {
                 override fun onResponse(call: Call<Trip>, response: Response<Trip>) {
                     if(response.code() == 201) {
@@ -192,19 +196,21 @@ class ApiService {
         )
     }
 
-    fun deleteTrip(trip: Trip){
+    fun deleteTrip(trip: Trip, onResult: (Boolean) -> Unit){
         val retrofit = ServiceBuilder.buildService(ApiInterface::class.java)
         //TODO change...
-        retrofit.deleteTrip(getCredentials(), trip.tour!!.id,trip.id).enqueue(
+        retrofit.deleteTrip(getCredentials(), trip.tour?.id ?: 0,trip.id).enqueue(
             object : Callback<Trip> {
                 override fun onResponse(call: Call<Trip>, response: Response<Trip>) {
-                    //TODO add response
-                    Log.i("json",response.code().toString())
-                    Log.i("json",response.body().toString())
+                    if(response.code() == 204)
+                        onResult(true)
+                    else
+                        onResult(false)
                 }
 
                 override fun onFailure(call: Call<Trip>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    t.message?.let { Log.e("json", it) }
+                    onResult(false)
                 }
             }
         )
