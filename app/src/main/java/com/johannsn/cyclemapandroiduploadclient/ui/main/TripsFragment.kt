@@ -27,6 +27,9 @@ class TripsFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     private val tripsList = mutableListOf<Trip>()
+    private var loading = false
+    private val apiService = ApiService()
+    private var adapter: ArrayAdapter<Trip>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,14 +46,27 @@ class TripsFragment : Fragment() {
         (activity as MainActivity).supportActionBar!!.setSubtitle(R.string.select_trip)
         binding.downloadProgressCycle.visibility = View.VISIBLE
 
+        adapter = ArrayAdapter(requireActivity(),R.layout.listview_item, tripsList)
+        createListViewAdapterListener()
         (activity as MainActivity).currentTrip = null
+
         val swipeRefreshLayout = binding.refreshLayout
         swipeRefreshLayout.setOnRefreshListener {
 
-            loadTrips()
+            if(!loading){
+                loadTrips()
+            }
             swipeRefreshLayout.isRefreshing = false
         }
-        //TODO do not always reload
+        //add trip fab
+        binding.fab.visibility = if((activity as MainActivity).gotSharedCoordinates) View.VISIBLE else View.GONE
+        binding.fab.setOnClickListener {
+            if((activity as MainActivity).sharedTrip != null) {
+                (activity as MainActivity).currentTrip = (activity as MainActivity).sharedTrip
+            }
+            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
+        }
+
         loadTrips()
     }
 
@@ -141,129 +157,37 @@ class TripsFragment : Fragment() {
 
     //TODO use template?
     private fun loadTrips() {
-        val listView: ListView = binding.listView
-        val adapter = ArrayAdapter(requireActivity(),R.layout.listview_item, tripsList)
+        loading = true
         val tour = (activity as MainActivity).currentTour
         if(tour != null){
-            val apiService = ApiService()
             apiService.getTripsForTour(tour.id){ trips ->
                 if (trips != null) {
-                    binding.listView.visibility = View.VISIBLE
-                    binding.textViewError.visibility = View.GONE
-
-                    binding.fab.visibility = if((activity as MainActivity).gotSharedCoordinates) View.VISIBLE else View.GONE
-                    binding.fab.setOnClickListener {
-                        //TODO check if sharedTrip is null
-                        (activity as MainActivity).currentTrip =  (activity as MainActivity).sharedTrip
-                        if(!(activity as MainActivity).gotSharedCoordinates) {
-                            (activity as MainActivity).sharedTrip?.coordinates?.clear()
-                        }
-                        findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
-                    }
                     if(trips.size > 0) {
+                        binding.listView.visibility = View.VISIBLE
+                        binding.textViewError.visibility = View.GONE
                         tripsList.clear()
                         tripsList.addAll(trips)
-                        listView.adapter = adapter
-                        listView.onItemClickListener =
-                            AdapterView.OnItemClickListener { _, _, position, _ ->
-
-                                binding.downloadProgressCycle.visibility = View.VISIBLE
-
-                                val clickedTrip = listView.getItemAtPosition(position) as Trip
-                                (activity as MainActivity).currentTrip = clickedTrip
-
-                                if ((activity as MainActivity).gotSharedCoordinates) {
-                                    if(clickedTrip.coordinates.isNotEmpty()) {
-                                        val dialogBuilder = AlertDialog.Builder(activity)
-                                        dialogBuilder.setTitle("The Trip already contains Coordinates. What do you want to do?")
-                                        dialogBuilder.setPositiveButton(
-                                            "Add before"
-                                        ) { _, _ ->
-                                            //get currentTrip once?
-                                            //TODO has to add up later or rename...
-                                            /*
-                                            (activity as MainActivity).sharedTrip?.coordinates?.let {
-                                                clickedTrip.coordinates.addAll(
-                                                    it
-                                                )
-                                            }
-                                            */
-                                            //(activity as MainActivity).currentCoordinates = clickedTrip.coordinates
-                                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
-                                        }
-                                        dialogBuilder.setNegativeButton(
-                                            "Add after"
-                                        ) { _, _ ->
-                                            //TODO
-                                            //((activity) as MainActivity).sharedTrip..addAll(
-                                                //clickedTrip.coordinates
-                                            //)
-                                            findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
-                                        }
-
-                                        dialogBuilder.setNeutralButton(R.string.cancel) { _, _ ->
-                                        }
-                                        val dialog = dialogBuilder.create()
-                                        dialog.show()
-                                        //TODO use bundle
-                                    }
-                                    (activity as MainActivity).currentTrip =  (activity as MainActivity).sharedTrip
-                                } else {
-                                    /*
-                                    if(clickedTrip.coordinates.isNotEmpty()) {
-                                        //TODO pass via bundle?
-                                        (activity as MainActivity).currentCoordinates =
-                                            clickedTrip.coordinates
-                                    }else {
-                                        (activity as MainActivity).currentCoordinates.clear()
-                                    }
-                                     */
-                                    findNavController().navigate(R.id.action_TripsFragment_to_TripFragment)
-                                }
-                            }
-                        listView.onItemLongClickListener =
-                            AdapterView.OnItemLongClickListener { _, _, position, _ ->
-                                val clickedTrip = listView.getItemAtPosition(position) as Trip
-                                val dialogBuilder = AlertDialog.Builder(activity)
-                                dialogBuilder.setTitle("Are you sure you want to delete Trip $clickedTrip.")
-                                dialogBuilder.setPositiveButton(
-                                    "Delete Tour"
-                                ) { _, _ ->
-                                    binding.downloadProgressCycle.visibility = View.VISIBLE
-                                    //TODO does not work
-                                    apiService.deleteTrip(clickedTrip)
-                                    //TODO only on success
-                                    tripsList.remove(clickedTrip)
-                                    adapter.notifyDataSetChanged()
-                                    binding.downloadProgressCycle.visibility = View.GONE
-                                }
-
-                                dialogBuilder.setNegativeButton(R.string.cancel) { _, _ ->
-                                }
-                                val dialog = dialogBuilder.create()
-                                dialog.show()
-                                true
-                            }
+                        adapter?.notifyDataSetChanged()
                     } else {
                         binding.textViewError.visibility = View.VISIBLE
+                        binding.listView.visibility = View.GONE
                         binding.textViewError.setText(R.string.no_trips_for_tour)
                     }
                 }
                 else
                 {
                     binding.textViewError.visibility = View.VISIBLE
-                    binding.fab.visibility = View.GONE
                     binding.listView.visibility = View.GONE
                     tripsList.clear()
-                    adapter.notifyDataSetChanged()
+                    adapter?.notifyDataSetChanged()
                     Snackbar.make(requireView(),R.string.failed_to_load, Snackbar.LENGTH_LONG)
                         .show()
-                    //TODO catch error
                 }
                 binding.downloadProgressCycle.visibility = View.GONE
 
             }
         }
+        loading = false
     }
 
     override fun onDestroyView() {

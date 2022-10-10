@@ -66,7 +66,7 @@ class TripFragment : Fragment() {
             }
             binding.buttonEdit.setOnClickListener {
                 if (binding.textViewTitle.text.isBlank() || binding.textViewText.text.isBlank()) {
-                    Snackbar.make(view, "Title and Text cannot be empty.", Snackbar.LENGTH_SHORT)
+                    Snackbar.make(view, R.string.title_text_cannot_be_empty, Snackbar.LENGTH_SHORT)
                         .show()
                 } else {
                     val apiService = ApiService()
@@ -97,15 +97,15 @@ class TripFragment : Fragment() {
                             }
                             drawResult(view, barText, sucess)
                         }
+                         */
 
                     } else {
                         (activity as MainActivity).currentTour?.id?.let {
                             apiService.addTrip(it, newTrip) { trip ->
                                 var sucess = false
-                                var barText = "Failed to create Trip"
+                                var barText = getString(R.string.failed_to_create_trip)
                                 if (trip != null) {
-                                    barText =
-                                        R.string.create_trip.toString() + "Created ${trip.title}. (${trip.id})."
+                                    barText = getString(R.string.added_trip,trip.title,trip.id)
                                     sucess = true
                                 }
                                 drawResult(view, barText, sucess)
